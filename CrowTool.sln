@@ -7,10 +7,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrowTool.Shared", "CrowTool
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrowTool.StaticBlazorWasmClient", "CrowTool.StaticBlazorWasmClient\CrowTool.StaticBlazorWasmClient.csproj", "{F740C48B-5F77-4431-8951-D55E3A330256}"
 EndProject
-#Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrowTool.YARP", "CrowTool.YARP\CrowTool.YARP.csproj", "{7E63F019-E50F-477E-A6AA-E67F627F671A}"
-#EndProject
-#Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrowTool.WebAPI", "CrowTool.WebAPI\CrowTool.WebAPI.csproj", "{E094FF85-5918-4C7C-9F44-64948E4D9315}"
-#EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrowTool.YARP", "CrowTool.YARP\CrowTool.YARP.csproj", "{7E63F019-E50F-477E-A6AA-E67F627F671A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrowTool.WebAPI", "CrowTool.WebAPI\CrowTool.WebAPI.csproj", "{E094FF85-5918-4C7C-9F44-64948E4D9315}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

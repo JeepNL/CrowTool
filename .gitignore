@@ -363,5 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # CrowTool
-CrowTool.YARP/
-CrowTool.WebAPI/
+/CrowTool.WebAPI
+/CrowTool.YARP
