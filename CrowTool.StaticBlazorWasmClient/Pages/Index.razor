@@ -1,8 +1,10 @@
 ﻿@page "/"
+@inject NavigationManager NavMan
+@inject StateContainerService StateContainer
 
 <PageTitle>Index | CrowTool</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Hello, @($"{userName}!")</h1>
 
 <p style="margin-bottom: 1rem;">
     Welcome to your new app.
@@ -13,3 +15,24 @@
         <SurveyPrompt Title="How is Blazor working for you?" />
     </FluentCard>
 </FluentDesignSystemProvider>
+
+@if (userId == 0)
+{
+    <FluentButton style="margin-top: 2em" Appearance="Appearance.Accent" @onclick=login>Log in with Twitter</FluentButton>
+}
+
+@code {
+    private string userName = string.Empty;
+    private long userId;
+
+    protected override void OnInitialized()
+    {
+        userId = StateContainer.UserInfo.UserId;
+        userName = (string.IsNullOrEmpty(StateContainer.UserInfo.Name))?  "Twitter" : StateContainer.UserInfo.Name;
+    }
+
+    private void login()
+    {
+        NavMan.NavigateTo("/twitter/login");
+    }
+}

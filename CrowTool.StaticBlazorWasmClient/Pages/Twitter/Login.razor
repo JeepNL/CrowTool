@@ -1,0 +1,29 @@
+﻿@page "/twitter/login"
+@using System.Web;
+@inject NavigationManager NavMan
+@inject IConfiguration Config
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+<PageTitle>CrowTool | Loggin In</PageTitle>
+
+<div>
+    <h1>Loggin In</h1>
+
+    <p>Please wait ...</p>
+</div>
+
+@code
+{
+    protected override async Task OnInitializedAsync()
+    {
+        string? state = Guid.NewGuid().ToString().Replace("-", "");
+        string? navToUrl = $"https://{Config["BackEndUrl"]}/OAuth2/Begin";
+        string? returnUrl = HttpUtility.UrlEncode($"https://{Config["FrontEndUrl"]}/OAuth2/Complete");
+        string? navigateTo = $"{navToUrl}?state={state}&return_url={returnUrl}";
+
+        BrowserStorage bStorage = new() { State = state };
+        await LocalStorage.SetItemAsync<BrowserStorage>("b_stor", bStorage);
+
+        NavMan.NavigateTo(navigateTo, true);
+    }
+}

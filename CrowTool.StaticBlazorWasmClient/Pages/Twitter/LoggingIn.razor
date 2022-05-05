@@ -1,0 +1,71 @@
+﻿@page "/OAuth2/Complete"
+@inject HttpClient Http
+@inject NavigationManager NavMan
+@inject IConfiguration Config
+@inject ILocalStorageService LocalStorage
+@inject StateContainerService StateContainer
+
+<PageTitle>CrowTool | Logging In</PageTitle>
+
+<div>
+    <h1>Loggin In</h1>
+
+    <p>Please wait ...</p>
+</div>
+
+@code {
+    [Parameter][SupplyParameterFromQuery] public string error { get; set; } = "access_denied";
+    [Parameter][SupplyParameterFromQuery] public string code { get; set; } = "";
+    [Parameter][SupplyParameterFromQuery] public string state { get; set; } = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        BrowserStorage bStorage = await LocalStorage.GetItemAsync<BrowserStorage>("b_stor");
+
+        if (error == "access_denied")
+            AuthError("Access Denied");
+        else if (bStorage.State != state)
+            AuthError("State != state");
+        else
+        {
+            if (string.IsNullOrEmpty(code.Trim()) || string.IsNullOrEmpty(state.Trim()))
+                AuthError("Missing code or state");
+            else
+            {
+                TwitterLoginRequest twitterRequestTokens = new() { Code = code, State = state };
+
+                string? PostToBackEndApiUrl = $"https://{Config["BackEndUrl"]}/OAuth2/Complete";
+                HttpResponseMessage? responseMessage = await Http.PostAsJsonAsync(PostToBackEndApiUrl, twitterRequestTokens);
+
+                if (responseMessage.IsSuccessStatusCode)
+                {
+                    bStorage.Val = await responseMessage.Content.ReadAsStringAsync();
+                    byte[]? twitterLoginResponseBytes = Convert.FromBase64String(bStorage.Val);
+                    TwitterLoginResponse? twitterLoginResponse = JsonSerializer.Deserialize<TwitterLoginResponse>(twitterLoginResponseBytes);
+
+                    string? accessToken = twitterLoginResponse?.AccessToken ?? "";
+                    string? refreshToken = twitterLoginResponse?.RefreshToken ?? "";
+                    long? expiresInTicks = twitterLoginResponse?.ExpiresInTicks ?? 0;
+
+                    if (expiresInTicks == 0 || string.IsNullOrEmpty(accessToken) || string.IsNullOrEmpty(refreshToken))
+                        AuthError("IsSuccessStatusCode = true // secondsToExpire = 0, AccessToken or RefreshToken is empty");
+                    else
+                    {
+                        StateContainer.UserInfo = twitterLoginResponse!;
+                        await LocalStorage.SetItemAsync<BrowserStorage>("b_stor", bStorage);
+                        NavMan.NavigateTo("/");
+                    }
+                }
+                else
+                    AuthError("IsSuccessStatusCode = false");
+            };
+        }
+
+        // local function
+        void AuthError(string error = "")
+        {
+            Console.WriteLine($"***** Error: {error}");
+            NavMan.NavigateTo("/");
+        }
+    }
+}

@@ -1,4 +1,10 @@
-﻿@inherits LayoutComponentBase
+﻿@using System.Timers
+@inherits LayoutComponentBase
+@inject HttpClient Http
+@inject IConfiguration Config
+@inject StateContainerService StateContainer
+@inject ISyncLocalStorageService LocalStorage
+@implements IDisposable
 
 <PageTitle>CrowTool</PageTitle>
 
@@ -7,17 +13,23 @@
         <h2>CrowTool</h2>
         @*<a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>*@
     </div>
-    <div class="main">
+    <div class="main_without_nav">
+
+        @*
         <div class="navigation">
-            <NavMenu />
+        <NavMenu />
         </div>
+        *@
 
         <div class="content">
             <main>
                 <article class="content px-4">
                     <ErrorBoundary>
                         <ChildContent>
-                            @Body
+                            @if (!tokenExpired)
+                            {
+                                @Body
+                            }
                         </ChildContent>
                         <ErrorContent Context="ex">
                             <p class="error">@ex.Message</p>
@@ -26,7 +38,8 @@
                     <div class="footer">
                         <code>
                             <small>
-                                -- Microsoft ASP.NET Static <a href="https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor" target="_blank">Blazor WebAssembly</a> App using <a href="https://www.fast.design/docs/integrations/blazor/" target="_blank">Fast Blazor</a> FluentUI Web Components (<a href="https://github.com/microsoft/fast-blazor" target="_blank">GitHub</a>)<br />
+                                @* #TODO - this is awfull, mobile first. *@
+                                -- Microsoft ASP.NET Core Static <a href="https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor" target="_blank">Blazor WebAssembly</a> App using <a href="https://www.fast.design/docs/integrations/blazor/" target="_blank">Fast Blazor</a> FluentUI Web Components (<a href="https://github.com/microsoft/fast-blazor" target="_blank">GitHub</a>)<br />
                                 &nbsp;&nbsp; Powered by <a href="https://devblogs.microsoft.com/dotnet/asp-net-core-updates-in-dotnet-7-preview-3/" target="_blank">.NET 7 Preview 3</a>, <a href="https://www.linqtotwitter.com/" target="_blank" class="text-reset">LinqToTwitter</a> &amp; hosted on <a href="https://pages.cloudflare.com/" target="_blank">Cloudflare Pages</a> (Ubuntu)<br />
                                 &nbsp;&nbsp; &copy; 2022 CrowTool, All Rights Reserved.
                             </small>
@@ -37,3 +50,130 @@
         </div>
     </div>
 </div>
+
+
+@code {
+    BrowserStorage? bStorage;
+
+    private Timer? timer;
+    bool tokenExpired = false;
+    int minutesToExpire = 3;
+    int minutesToCheck = 2;
+
+    protected override async Task OnInitializedAsync()
+    {
+        StateContainer.OnChange += StateContainerChanged;
+
+        bStorage = LocalStorage.GetItem<BrowserStorage>("b_stor");
+        if (bStorage != null && !string.IsNullOrEmpty(bStorage.Val))
+        {
+            byte[] bytes = Convert.FromBase64String(bStorage.Val);
+            StateContainer.UserInfo = JsonSerializer.Deserialize<TwitterLoginResponse>(bytes)!;
+
+            // check if token has expired for returning user
+            long ticksLeft = StateContainer.UserInfo.ExpiresInTicks - DateTime.UtcNow.Ticks;
+            TimeSpan expires = new TimeSpan(ticksLeft);
+
+            if (expires.TotalMinutes <= minutesToExpire)
+            {
+                Console.WriteLine($"***** MainLayout OnInitialized - Token has expired for returning app user: {StateContainer.UserInfo.UserId}");
+                tokenExpired = true;
+                await RefreshTokens();
+            }
+            else
+                Console.WriteLine($"***** MainLayout OnInitialized - Token has not expired for user: {StateContainer.UserInfo.UserId}");
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // always start timer at first render
+            if (timer is null)
+            {
+                Console.WriteLine($"***** MainLayout OnAfterRender First Render - StartTimer: {DateTime.UtcNow.ToLocalTime()}");
+                timer = new Timer(1000 * 60 * minutesToCheck); // check every x minutes
+                timer.Elapsed += (sender, eventArgs) => OnTimerCallback();
+                timer.Enabled = true;
+                timer.Start();
+            }
+            else
+                Console.WriteLine("***** MainLayout OnAfterRender First Render - timer is not null, should not happen");
+        }
+        else
+            Console.WriteLine("***** MainLayout OnAfterRender *NOT* First Render");
+    }
+
+    private void OnTimerCallback() // for expired token
+    {
+        _ = InvokeAsync(async () =>
+        {
+            if (StateContainer.UserInfo.UserId != 0) // user had logged in.
+            {
+                // #TODO CHECK TICKS LEFT, if someone edited localstorage, delete localstorage
+                long ticksLeft = StateContainer.UserInfo.ExpiresInTicks - DateTime.UtcNow.Ticks; // check appDataService.ExpireTokenTicks
+                TimeSpan expires = new TimeSpan(ticksLeft);
+                Console.WriteLine($"***** MainLayout OnTimerCallback - UserId: {StateContainer.UserInfo.UserId}, Expires in {(int)expires.TotalMinutes} minutes. ({DateTime.UtcNow.ToLocalTime()})");
+                if (expires.TotalMinutes <= minutesToExpire)
+                    await RefreshTokens();
+            }
+            else
+                Console.WriteLine($"***** MainLayout OnTimerCallback - User not logged in - UserId: {StateContainer.UserInfo.UserId} - ({DateTime.UtcNow.ToLocalTime()})");
+        });
+    }
+
+    public async Task RefreshTokens()
+    {
+        RefreshRequestResponse? refreshRequestResponse = new()
+            {
+                AccessToken = StateContainer.UserInfo.AccessToken,
+                RefreshToken = StateContainer.UserInfo.RefreshToken
+            };
+
+        Console.WriteLine($"***** MainLayout RefreshTokens - Before - AccessToken: {StateContainer.UserInfo.AccessToken}");
+        Console.WriteLine($"***** MainLayout RefreshTokens - Before - RefreshToken: {StateContainer.UserInfo.RefreshToken}");
+
+        string? PostToBackEndApiUrl = $"https://{Config["BackEndUrl"]}/OAuth2/Refresh";
+        HttpResponseMessage? responseMessage = await Http.PostAsJsonAsync(PostToBackEndApiUrl, refreshRequestResponse);
+
+        if (responseMessage.IsSuccessStatusCode)
+            refreshRequestResponse = await responseMessage.Content.ReadFromJsonAsync<RefreshRequestResponse>();
+
+        if (refreshRequestResponse?.ExpiresIn == Helpers.TwitterExpiresInSeconds)
+        {
+            StateContainer.UserInfo.AccessToken = refreshRequestResponse.AccessToken;
+            StateContainer.UserInfo.RefreshToken = refreshRequestResponse.RefreshToken;
+            StateContainer.UserInfo.ExpiresInTicks = DateTime.UtcNow.AddSeconds(refreshRequestResponse.ExpiresIn).Ticks;
+
+            BinaryData jsonData = BinaryData.FromObjectAsJson(StateContainer.UserInfo, Helpers.JsonSeriOptions());
+            string jsonDataBase64 = Convert.ToBase64String(jsonData);
+            bStorage!.Val = jsonDataBase64;
+            LocalStorage.SetItem<BrowserStorage>("b_stor", bStorage);
+            tokenExpired = false;
+
+            Console.WriteLine($"***** MainLayout RefreshTokens - After - AccessToken: {StateContainer.UserInfo.AccessToken}");
+            Console.WriteLine($"***** MainLayout RefreshTokens - After - RefreshToken: {StateContainer.UserInfo.RefreshToken}");
+
+            //// #TODO Get Me! - User may have changed his UserName, Handle (Name) and/or ProfileImage, new call to 👇
+            //TwitterContext twitterCtx = new(auth);
+            //TwitterUserQuery? response = await (
+            //	from usr in twitterCtx.TwitterUser
+            //	where usr.Type == UserType.Me
+            //	select usr
+            //).SingleOrDefaultAsync();
+        }
+        // #TODO else - refresh token failed, logout user - set bstorage to null
+    }
+
+    public void Dispose()
+    {
+        timer?.Dispose();
+        StateContainer.OnChange -= StateHasChanged;
+    }
+
+    private void StateContainerChanged()
+    {
+        StateHasChanged();
+    }
+}
