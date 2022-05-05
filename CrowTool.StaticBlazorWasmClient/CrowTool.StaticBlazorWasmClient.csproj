@@ -11,6 +11,7 @@
     <TrimmerSingleWarn>true</TrimmerSingleWarn>
     <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <SelfContained>True</SelfContained>
   </PropertyGroup>
 
   <ItemGroup>
