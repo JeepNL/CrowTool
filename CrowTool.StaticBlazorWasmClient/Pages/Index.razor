@@ -29,9 +29,9 @@
     protected override async Task OnInitializedAsync()
     {
         userId = StateContainer.UserInfo.UserId;
+        userName = (string.IsNullOrEmpty(StateContainer.UserInfo.Name)) ? "Twitter" : StateContainer.UserInfo.Name;
         if (userId > 0)
         {
-            userName = (string.IsNullOrEmpty(StateContainer.UserInfo.Name)) ? "Twitter" : StateContainer.UserInfo.Name;
             await CallFromBrowserL2T();
         }
     }

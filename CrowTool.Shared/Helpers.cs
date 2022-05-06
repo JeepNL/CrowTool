@@ -5,15 +5,8 @@ namespace CrowTool.Shared;
 
 public static class Helpers
 {
-	/// <summary>
-	///
-	/// </summary>
 	public readonly static int TwitterExpiresInSeconds = 7200;
 
-	/// <summary>
-	///
-	/// </summary>
-	/// <returns></returns>
 	public static JsonSerializerOptions JsonSeriOptions()
 	{
 		JsonSerializerOptions jsonSerializerOptions = new()
