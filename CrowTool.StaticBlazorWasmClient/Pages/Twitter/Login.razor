@@ -16,12 +16,14 @@
 {
     protected override async Task OnInitializedAsync()
     {
+        Console.WriteLine("***** OnInitializedAsync");
         string? state = Guid.NewGuid().ToString().Replace("-", "");
+        string? challenge = Guid.NewGuid().ToString().Replace("-", "");
         string? navToUrl = $"https://{Config["BackEndUrl"]}/OAuth2/Begin";
         string? returnUrl = HttpUtility.UrlEncode($"https://{Config["FrontEndUrl"]}/OAuth2/Complete");
-        string? navigateTo = $"{navToUrl}?state={state}&return_url={returnUrl}";
+        string? navigateTo = $"{navToUrl}?state={state}&challenge={challenge}&return_url={returnUrl}";
 
-        BrowserStorage bStorage = new() { State = state };
+        BrowserStorage bStorage = new() { State = state, Challenge = challenge };
         await LocalStorage.SetItemAsync<BrowserStorage>("b_stor", bStorage);
 
         NavMan.NavigateTo(navigateTo, true);

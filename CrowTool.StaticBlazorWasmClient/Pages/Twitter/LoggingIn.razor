@@ -32,7 +32,7 @@
                 AuthError("Missing code or state");
             else
             {
-                TwitterLoginRequest twitterRequestTokens = new() { Code = code, State = state };
+                TwitterLoginRequest twitterRequestTokens = new() { Code = code, State = state, Challenge = bStorage.Challenge };
 
                 string? PostToBackEndApiUrl = $"https://{Config["BackEndUrl"]}/OAuth2/Complete";
                 HttpResponseMessage? responseMessage = await Http.PostAsJsonAsync(PostToBackEndApiUrl, twitterRequestTokens);

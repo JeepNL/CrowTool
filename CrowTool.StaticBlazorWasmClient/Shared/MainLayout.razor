@@ -2,6 +2,7 @@
 @inherits LayoutComponentBase
 @inject HttpClient Http
 @inject IConfiguration Config
+@inject NavigationManager NavMan
 @inject StateContainerService StateContainer
 @inject ISyncLocalStorageService LocalStorage
 @implements IDisposable
@@ -76,12 +77,9 @@
 
             if (expires.TotalMinutes <= minutesToExpire)
             {
-                //Console.WriteLine($"***** MainLayout OnInitialized - Token has expired for returning app user: {StateContainer.UserInfo.UserId}");
                 tokenExpired = true;
                 await RefreshTokens();
             }
-            //else
-            //    Console.WriteLine($"***** MainLayout OnInitialized - Token has not expired for user: {StateContainer.UserInfo.UserId}");
         }
     }
 
@@ -92,36 +90,28 @@
             // always start timer at first render
             if (timer is null)
             {
-                Console.WriteLine("Initialize.");
-                //Console.WriteLine($"***** MainLayout OnAfterRender First Render - StartTimer: {DateTime.UtcNow.ToLocalTime()}");
+                Console.WriteLine("Init.");
                 timer = new Timer(1000 * 60 * minutesToCheck); // check every x minutes
                 timer.Elapsed += (sender, eventArgs) => OnTimerCallback();
                 timer.Enabled = true;
                 timer.Start();
             }
-            //else
-            //    Console.WriteLine("***** MainLayout OnAfterRender First Render - timer is not null, should not happen");
         }
-        //else
-        //    Console.WriteLine("***** MainLayout OnAfterRender *NOT* First Render");
     }
 
     private void OnTimerCallback() // for expired token
     {
         _ = InvokeAsync(async () =>
         {
-            if (StateContainer.UserInfo.UserId != 0) // user had logged in.
+            if (StateContainer.UserInfo.UserId != 0) // user logged in.
             {
                 // #TODO CHECK TICKS LEFT, if someone edited localstorage, delete localstorage
                 Console.WriteLine("Token Check.");
-                long ticksLeft = StateContainer.UserInfo.ExpiresInTicks - DateTime.UtcNow.Ticks; // check appDataService.ExpireTokenTicks
+                long ticksLeft = StateContainer.UserInfo.ExpiresInTicks - DateTime.UtcNow.Ticks;
                 TimeSpan expires = new TimeSpan(ticksLeft);
-                //Console.WriteLine($"***** MainLayout OnTimerCallback - UserId: {StateContainer.UserInfo.UserId}, Expires in {(int)expires.TotalMinutes} minutes. ({DateTime.UtcNow.ToLocalTime()})");
                 if (expires.TotalMinutes <= minutesToExpire)
                     await RefreshTokens();
             }
-            //else
-            //    Console.WriteLine($"***** MainLayout OnTimerCallback - User not logged in - UserId: {StateContainer.UserInfo.UserId} - ({DateTime.UtcNow.ToLocalTime()})");
         });
     }
 
@@ -133,41 +123,53 @@
                 RefreshToken = StateContainer.UserInfo.RefreshToken
             };
 
-        Console.WriteLine("Token Refreshed.");
-
-        //Console.WriteLine($"***** MainLayout RefreshTokens - Before - AccessToken: {StateContainer.UserInfo.AccessToken}");
-        //Console.WriteLine($"***** MainLayout RefreshTokens - Before - RefreshToken: {StateContainer.UserInfo.RefreshToken}");
+        Console.WriteLine("Refreshing Token.");
 
         string? PostToBackEndApiUrl = $"https://{Config["BackEndUrl"]}/OAuth2/Refresh";
         HttpResponseMessage? responseMessage = await Http.PostAsJsonAsync(PostToBackEndApiUrl, refreshRequestResponse);
 
         if (responseMessage.IsSuccessStatusCode)
+        {
             refreshRequestResponse = await responseMessage.Content.ReadFromJsonAsync<RefreshRequestResponse>();
 
-        if (refreshRequestResponse?.ExpiresIn == Helpers.TwitterExpiresInSeconds)
-        {
-            StateContainer.UserInfo.AccessToken = refreshRequestResponse.AccessToken;
-            StateContainer.UserInfo.RefreshToken = refreshRequestResponse.RefreshToken;
-            StateContainer.UserInfo.ExpiresInTicks = DateTime.UtcNow.AddSeconds(refreshRequestResponse.ExpiresIn).Ticks;
+            if (refreshRequestResponse?.ExpiresIn == Helpers.TwitterExpiresInSeconds)
+            {
+                StateContainer.UserInfo.AccessToken = refreshRequestResponse.AccessToken;
+                StateContainer.UserInfo.RefreshToken = refreshRequestResponse.RefreshToken;
+                StateContainer.UserInfo.ExpiresInTicks = DateTime.UtcNow.AddSeconds(refreshRequestResponse.ExpiresIn).Ticks;
 
-            BinaryData jsonData = BinaryData.FromObjectAsJson(StateContainer.UserInfo, Helpers.JsonSeriOptions());
-            string jsonDataBase64 = Convert.ToBase64String(jsonData);
-            bStorage!.Val = jsonDataBase64;
-            LocalStorage.SetItem<BrowserStorage>("b_stor", bStorage);
-            tokenExpired = false;
+                BinaryData jsonData = BinaryData.FromObjectAsJson(StateContainer.UserInfo, Helpers.JsonSeriOptions());
+                string jsonDataBase64 = Convert.ToBase64String(jsonData);
+                bStorage!.Val = jsonDataBase64;
+                LocalStorage.SetItem<BrowserStorage>("b_stor", bStorage);
+                tokenExpired = false;
 
-            //Console.WriteLine($"***** MainLayout RefreshTokens - After - AccessToken: {StateContainer.UserInfo.AccessToken}");
-            //Console.WriteLine($"***** MainLayout RefreshTokens - After - RefreshToken: {StateContainer.UserInfo.RefreshToken}");
-
-            //// #TODO Get Me! - User may have changed his UserName, Handle (Name) and/or ProfileImage, new call to 👇
-            //TwitterContext twitterCtx = new(auth);
-            //TwitterUserQuery? response = await (
-            //	from usr in twitterCtx.TwitterUser
-            //	where usr.Type == UserType.Me
-            //	select usr
-            //).SingleOrDefaultAsync();
+                //// #TODO Get Me! - User may have changed his UserName, Handle (Name) and/or ProfileImage, new call to 👇
+                //TwitterContext twitterCtx = new(auth);
+                //TwitterUserQuery? response = await (
+                //	from usr in twitterCtx.TwitterUser
+                //	where usr.Type == UserType.Me
+                //	select usr
+                //).SingleOrDefaultAsync();
+            }
         }
-        // #TODO else - refresh token failed, logout user - set bstorage to null
+        else // BadRequest
+        {
+            string resp = await responseMessage.Content.ReadAsStringAsync();
+            if (resp == "ReInit")
+            {
+                Console.WriteLine("Couldn't refresh tokens, please log in again ...");
+                StateContainer.UserInfo.UserId = 0;
+                StateContainer.UserInfo.Name = "";
+                tokenExpired = false;
+                await InvokeAsync(StateHasChanged);
+            }
+            //// TODO
+            //else if (resp == "Connection")
+            //{
+
+            //}
+        }
     }
 
     public void Dispose()
