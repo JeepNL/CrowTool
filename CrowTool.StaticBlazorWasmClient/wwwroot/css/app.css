@@ -8,10 +8,8 @@
 
 .container {
     display: grid;
-    /*background-color: whitesmoke;*/
-    background-color: var(--fill-color);
     grid-template-columns: 1fr;
-    grid-template-rows: 60px 1fr;
+    grid-template-rows: 3rem 10fr;
     gap: 0px 0px;
     grid-auto-flow: row;
     grid-template-areas:
@@ -21,46 +19,57 @@
 
 .siteheader {
     grid-area: siteheader;
-    background-color: lightslategrey;
-    color: white;
-    border-bottom: 2px solid darkslategrey;
-    justify-content: flex-start;
-    height: 3.5rem;
-    display: flex;
+    grid-template-columns: 1fr 1fr;
+    background-color: lightslategray;
+    /*background-color: var(--fill-color);*/
+    /*color: var(--neutral-foreground-rest);*/
+    border-bottom: 1px solid #d6d5d5;
+    display: grid;
     align-items: center;
     white-space: nowrap;
-    padding-left: 1.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    grid-template-areas:
+        "headerleft headerright";
 }
 
     .siteheader a {
-        padding-inline-end: 10px;
+        /*padding-inline-end: 10px;*/
+        text-decoration: none;
+        color: var(--neutral-foreground-rest);
     }
 
-.main_without_nav {
+.headerleft {
+}
+
+    .headerleft h1 {
+        padding: 0px;
+        margin-top: 0px;
+        margin-bottom: 0px;
+    }
+
+.headerright {
     display: grid;
+    margin-top: 6px;
+    justify-content: flex-end;
+}
+
+.main {
+    display: grid;
+    /*grid-template-columns: 1fr 3fr;*/
     grid-template-columns: 1fr;
-    grid-template-rows: calc(100vh - 60px);
+    /*grid-template-rows: 1fr;*/
+    grid-template-rows: calc(100vh - 3rem);
     gap: 0px 0px;
     grid-auto-flow: row;
     grid-template-areas:
         "content";
-    grid-area: main;
-}
-
-.main_with_nav {
-    display: grid;
-    grid-template-columns: 200px 1fr;
-    grid-template-rows: calc(100vh - 60px);
-    gap: 0px 0px;
-    grid-auto-flow: row;
-    grid-template-areas:
-        "navigation content";
+    /*"navigation content";*/
     grid-area: main;
 }
 
 .navigation {
     grid-area: navigation;
-    /*background-color: whitesmoke;*/
     background-color: var(--fill-color);
     color: var(--neutral-foreground-rest);
     padding-left: calc(var(--design-unit) * 3px);
@@ -79,22 +88,26 @@
     }
 
     .navigation fluent-anchor {
-        width: 90%;
+        width: 100%;
     }
 
         .navigation fluent-anchor::part(control) {
+            justify-content: start;
+        }
+
+/*        .navigation fluent-anchor::part(control) {
             justify-content: start;
             background-color: whitesmoke;
         }
 
         .navigation fluent-anchor:hover::part(control) {
             background-color: lightgrey;
-        }
+        }		*/
+
 
 .content {
     grid-area: content;
     --elevation: 2;
-    /*background-color: ghostwhite;*/
     background-color: var(--fill-color);
     color: var(--neutral-foreground-rest);
     padding-inline-start: calc(var(--design-unit) * 6px);
@@ -112,6 +125,7 @@
     position: fixed;
     width: 100%;
     z-index: 1000;
+    margin: 20px 0;
 }
 
     #blazor-error-ui .dismiss {
@@ -130,9 +144,3 @@
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
-
-.prompt {
-    position: relative;
-    padding: 1rem 1rem;
-    border: 1px solid transparent;
-}

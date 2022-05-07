@@ -1,0 +1,9 @@
+﻿.footercontent {
+    padding: 1rem;
+    line-height: 110%;
+}
+
+    .footercontent a {
+        color: lightslategrey;
+    }
+

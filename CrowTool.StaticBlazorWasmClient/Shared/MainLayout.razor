@@ -5,16 +5,26 @@
 @inject NavigationManager NavMan
 @inject StateContainerService StateContainer
 @inject ISyncLocalStorageService LocalStorage
+@inject BaseLayerLuminance BaseLayerLuminance
 @implements IDisposable
 
 <PageTitle>CrowTool</PageTitle>
 
-<div class="container">
+<div class="container" @ref="container">
     <div class="siteheader">
-        <h2>CrowTool</h2>
+        <div class="headerleft">
+            <h1><a href="#">CrowTool</a></h1>
+        </div>
+        <div class="headerright">
+            <FluentSwitch @onchange=SwitchTheme>
+                <span style="padding-inline-end: 2px;"><b>Theme</b></span>
+                <span slot="unchecked-message"><b>Dark</b></span>
+                <span slot="checked-message"><b>Light</b></span>
+            </FluentSwitch>
+        </div>
         @*<a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>*@
     </div>
-    <div class="main_without_nav">
+    <div class="main">
 
         @*
         <div class="navigation">
@@ -25,7 +35,7 @@
         <div class="content">
             <main>
                 <article class="content px-4">
-                    <ErrorBoundary>
+                    <ErrorBoundary @ref="errorBoundary">
                         <ChildContent>
                             @if (!tokenExpired)
                             {
@@ -36,16 +46,7 @@
                             <p class="error">@ex.Message</p>
                         </ErrorContent>
                     </ErrorBoundary>
-                    <div class="footer">
-                        <code>
-                            <small>
-                                @* #TODO - this is awfull, mobile first. *@
-                                -- Microsoft ASP.NET Core Static <a href="https://dotnet.microsoft.com/en-us/apps/aspnet/web-apps/blazor" target="_blank">Blazor WebAssembly</a> App using <a href="https://www.fast.design/docs/integrations/blazor/" target="_blank">Fast Blazor</a> FluentUI Web Components (<a href="https://github.com/microsoft/fast-blazor" target="_blank">GitHub</a>)<br />
-                                &nbsp;&nbsp; Powered by <a href="https://devblogs.microsoft.com/dotnet/asp-net-core-updates-in-dotnet-7-preview-3/" target="_blank">.NET 7 Preview 3</a>, <a href="https://www.linqtotwitter.com/" target="_blank" class="text-reset">LinqToTwitter</a> &amp; hosted on <a href="https://pages.cloudflare.com/" target="_blank">Cloudflare Pages</a> (Ubuntu)<br />
-                                &nbsp;&nbsp; &copy; 2022 CrowTool, All Rights Reserved.
-                            </small>
-                        </code>
-                    </div>
+                    <Footer></Footer>
                 </article>
             </main>
         </div>
@@ -55,6 +56,10 @@
 
 @code {
     BrowserStorage? bStorage;
+
+    ElementReference container;
+    ErrorBoundary? errorBoundary;
+    float baseLayerLuminance = 0.15f;
 
     private Timer? timer;
     bool tokenExpired = false;
@@ -83,8 +88,10 @@
         }
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await BaseLayerLuminance.SetValueFor(container, baseLayerLuminance);
+
         if (firstRender)
         {
             // always start timer at first render
@@ -97,6 +104,11 @@
                 timer.Start();
             }
         }
+    }
+
+    protected override void OnParametersSet()
+    {
+        errorBoundary?.Recover();
     }
 
     private void OnTimerCallback() // for expired token
@@ -170,6 +182,11 @@
 
             //}
         }
+    }
+
+    public void SwitchTheme()
+    {
+        baseLayerLuminance = baseLayerLuminance == 1f ? 0.15f : 1f;
     }
 
     public void Dispose()

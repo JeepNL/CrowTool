@@ -6,11 +6,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>preview</LangVersion>
     <PublishTrimmed>true</PublishTrimmed>
-    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
-    <TrimmerSingleWarn>true</TrimmerSingleWarn>
     <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
+    <TrimmerSingleWarn>true</TrimmerSingleWarn>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
+    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
 
   <ItemGroup>
