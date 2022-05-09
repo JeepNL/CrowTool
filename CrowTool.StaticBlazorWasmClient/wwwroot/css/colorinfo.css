@@ -1,0 +1,48 @@
+﻿/*
+
+This is a custom stylesheet for the website.
+
+
+#TODO Text Primary (Orange)
+
+
+Background Base Dark Purple:
+    See: https://color.fast.design/
+    RGB 4 3 4
+    #040304
+
+        Darkest #2B212B (Table Border, Table Background (=Header & Dark Stripe)
+	    Darker #332933 (Header, Menu Top, Table Striped)
+	    Dark #3A313A (Content)
+	    Light #423942 (Footer, Table Active, Table Hover)
+	    Lighter #4A414A
+	    Lightest #514951
+
+Foreground Orange:
+    RGB 216 59 1
+	#D83B01
+
+    Accent (Orange)
+        Fill Rest #C03401
+        Fill Hoover #D83B01
+        Fill Active #A22C01
+        Fill Selected #DD5522
+
+	Neutral (Background Dark Puple, normal button)
+        Fill Rest #3D343D
+        Fill Hoover #453C45
+        Fill Active #382E38
+        Fill Selected #3D343D
+
+	Stealth & Outline (Background Dark Puple)
+        Fill Rest #2B212B
+        Fill Hoover #382E38
+        Fill Active #332933
+        Fill Selected #3D343D
+
+		Outline
+		    Outline Rest #6A636A
+		    Outline Hoover #908B90
+		    Outline Active #544B54
+
+*/

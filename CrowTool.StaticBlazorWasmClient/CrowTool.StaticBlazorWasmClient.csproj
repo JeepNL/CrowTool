@@ -24,8 +24,4 @@
     <ProjectReference Include="..\CrowTool.Shared\CrowTool.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\css\" />
-  </ItemGroup>
-
 </Project>

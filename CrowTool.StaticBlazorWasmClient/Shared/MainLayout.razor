@@ -1,11 +1,11 @@
 ﻿@using System.Timers
 @inherits LayoutComponentBase
-@implements IDisposable
 @inject HttpClient Http
 @inject IConfiguration Config
 @inject NavigationManager NavMan
 @inject StateContainerService StateContainer
 @inject ISyncLocalStorageService LocalStorage
+@implements IDisposable
 
 <PageTitle>CrowTool</PageTitle>
 
@@ -15,11 +15,11 @@
     </div>
 
     <main>
-        <div class="top-row px-4">
+        <div class="top-row">
             <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
         </div>
 
-        <article class="content px-4">
+        <article>
             <ErrorBoundary @ref="errorBoundary">
                 <ChildContent>
                     @if (!tokenExpired)
@@ -35,7 +35,6 @@
                     <p class="error">@ex.Message</p>
                 </ErrorContent>
             </ErrorBoundary>
-
         </article>
     </main>
 </div>
@@ -47,7 +46,7 @@
     private Timer? timer;
     bool tokenExpired = false;
     int minutesToExpire = 3;
-    int minutesToCheck = 2;
+    int minutesToCheck = 1;
     bool loaded = false;
 
     protected override async Task OnInitializedAsync()
@@ -55,6 +54,7 @@
         StateContainer.OnChange += StateContainerChanged;
 
         bStorage = LocalStorage.GetItem<BrowserStorage>("b_stor");
+
         if (bStorage != null && !string.IsNullOrEmpty(bStorage.Val))
         {
             byte[] bytes = Convert.FromBase64String(bStorage.Val);
@@ -67,6 +67,7 @@
             if (expires.TotalMinutes <= minutesToExpire)
             {
                 tokenExpired = true;
+                Console.WriteLine("Refresh Token.");
                 await RefreshTokens();
             }
         }
@@ -102,7 +103,7 @@
             if (StateContainer.UserInfo.UserId != 0) // user logged in.
             {
                 // #TODO CHECK TICKS LEFT, if someone edited localstorage, delete localstorage
-                Console.WriteLine("Token Check.");
+                Console.WriteLine("Check.");
                 long ticksLeft = StateContainer.UserInfo.ExpiresInTicks - DateTime.UtcNow.Ticks;
                 TimeSpan expires = new TimeSpan(ticksLeft);
                 if (expires.TotalMinutes <= minutesToExpire)

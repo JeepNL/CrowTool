@@ -1,20 +1,24 @@
 ﻿.footercontent {
     border-radius: 8px;
-    border: thin solid darkgrey;
+    border: 1px solid #332933; /*Darker*/
     margin-top: 2rem;
     margin-bottom: 1rem;
-    max-width: 640px;
+    max-width: 360px;
     padding: .5rem;
-    background-color: lightgrey;
+    background-color: #423942; /*Light*/
     font-family: monospace;
     font-size: 75%;
     line-height: 125%;
+	color: rgba(255, 255, 255, .50); /*White 50%*/
 }
 
     .footercontent a {
-        color: darkslategrey;
+        color: rgba(255, 255, 255, .75); /*White 75%*/
+        text-decoration: none;
     }
 
         .footercontent a:hover {
-            color: darkslateblue;
+            /*color: #D83B01;*/
+			color: rgba(255, 255, 255, .95); /*White 95%*/
+            text-decoration: underline;
         }

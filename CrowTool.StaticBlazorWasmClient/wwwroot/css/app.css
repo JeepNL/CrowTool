@@ -2,6 +2,8 @@
 
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: #3A313A;
+    color: #fff;
 }
 
 h1:focus {
@@ -9,18 +11,57 @@ h1:focus {
 }
 
 a, .btn-link {
-    color: #0071c1;
+    color: #C03401;
 }
+
+    a:hover, .btn-link:hover {
+        color: #D83B01;
+    }
+
+    a:hover, .btn-link:active {
+        color: #D83B01;
+    }
 
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background-color: #C03401;
+    border-color: #A22C01
 }
 
-.content {
-    padding-top: 1.1rem;
+    .btn-primary:hover {
+        color: #fff;
+        background-color: #D83B01;
+        border-color: #C03401
+    }
+
+    .btn-check:focus + .btn-primary, .btn-primary:focus {
+        color: #fff;
+        background-color: #D83B01;
+        border-color: #C03401;
+
+        box-shadow: 0 0 0 .25rem rgba(216, 59, 1,.5)
+    }
+
+    .btn-check:active + .btn-primary, .btn-check:checked + .btn-primary, .btn-primary.active, .btn-primary:active, .show > .btn-primary.dropdown-toggle {
+        color: #fff;
+        background-color: #C03401;
+        border-color: #C03401
+    }
+
+        .btn-check:active + .btn-primary:focus, .btn-check:checked + .btn-primary:focus, .btn-primary.active:focus, .btn-primary:active:focus, .show > .btn-primary.dropdown-toggle:focus {
+            box-shadow: 0 0 0 .25rem rgba(216, 59, 1,.5)
+        }
+
+    .btn-primary.disabled, .btn-primary:disabled {
+        color: #fff;
+        background-color: #C03401;
+        border-color: #A22C01
+    }
+
+/*.content {
+    padding-top: 1.2rem;
 }
+*/
 
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
