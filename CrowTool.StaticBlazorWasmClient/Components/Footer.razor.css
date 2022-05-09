@@ -1,9 +1,20 @@
 ﻿.footercontent {
-    padding: 1rem;
-    line-height: 110%;
+    border-radius: 8px;
+    border: thin solid darkgrey;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    max-width: 640px;
+    padding: .5rem;
+    background-color: lightgrey;
+    font-family: monospace;
+    font-size: 75%;
+    line-height: 125%;
 }
 
     .footercontent a {
-        color: lightslategrey;
+        color: darkslategrey;
     }
 
+        .footercontent a:hover {
+            color: darkslateblue;
+        }

@@ -11,21 +11,14 @@
     Welcome to your new app.
 </p>
 
-<BaseLayerLuminance Value="(float?)0.15">
-    <FluentCard BackReference="@context">
-        <div class="contents">
-            <SurveyPrompt Title="How is Blazor working for you?" />
-        </div>
-    </FluentCard>
-</BaseLayerLuminance>
 
 @if (userId == 0)
 {
-    <FluentButton style="margin-top: 2em" Appearance="Appearance.Accent" @onclick=login>Log in with Twitter</FluentButton>
+    <button class="btn btn-primary" @onclick=login>Log in with Twitter</button>
 }
 @*else
 {
-    <FluentButton style="margin-top: 2em" Appearance="Appearance.Accent" @onclick=YourTweets>Your Tweets</FluentButton>
+    <button class="btn btn-primary" @onclick=YourTweets>Your Tweets</button>
 }*@
 
 @code {
@@ -43,41 +36,7 @@
         //}
     }
 
-    private async Task YourTweets()
-    {
-        OAuth2Authorizer? auth = new()
-            {
-                CredentialStore = new OAuth2CredentialStore()
-                {
-                    AccessToken = StateContainer.UserInfo.AccessToken
-                }
-            };
-        IOAuth2CredentialStore? credentials = auth.CredentialStore as IOAuth2CredentialStore;
-
-        // HttpRequest to Twitter API via YARP (Proxy, Yet Another Reverse Proxy)
-        string? yarpUrl = $"{Config["YarpUrl"]}";
-        TwitterContext twitterCtx = new(auth)
-            {
-                BaseUrl = $"https://{yarpUrl}/1.1/",
-                BaseUrl2 = $"https://{yarpUrl}/2/"
-            };
-
-        // Get 'Me' (User)
-        TwitterUserQuery? response = await (
-            from usr in twitterCtx.TwitterUser
-            where usr.Type == UserType.Me
-                && usr.Expansions == $"{ExpansionField.AllUserFields}"
-                && usr.UserFields == $"{UserField.AllFields}"
-            select usr
-        ).SingleOrDefaultAsync();
-
-        var user = response?.Users?.SingleOrDefault();
-
-        //Console.WriteLine($"***** CallFromBrowserL2T - User: {user?.Name}");
-    }
-
-
-    //private async Task CallFromBrowserL2T()
+    //private async Task YourTweets()
     //{
     //    OAuth2Authorizer? auth = new()
     //        {
@@ -107,7 +66,7 @@
 
     //    var user = response?.Users?.SingleOrDefault();
 
-    //    Console.WriteLine($"***** CallFromBrowserL2T - User: {user?.Name}");
+    //    //Console.WriteLine($"***** CallFromBrowserL2T - User: {user?.Name}");
     //}
 
     private void login()

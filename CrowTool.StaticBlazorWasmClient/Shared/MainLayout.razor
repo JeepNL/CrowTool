@@ -1,70 +1,54 @@
 ﻿@using System.Timers
 @inherits LayoutComponentBase
+@implements IDisposable
 @inject HttpClient Http
 @inject IConfiguration Config
 @inject NavigationManager NavMan
 @inject StateContainerService StateContainer
 @inject ISyncLocalStorageService LocalStorage
-@inject BaseLayerLuminance BaseLayerLuminance
-@implements IDisposable
 
 <PageTitle>CrowTool</PageTitle>
 
-<div class="container" @ref="container">
-    <div class="siteheader">
-        <div class="headerleft">
-            <h1><a href="#">CrowTool</a></h1>
-        </div>
-        <div class="headerright">
-            <FluentSwitch @onchange=SwitchTheme>
-                <span style="padding-inline-end: 2px;"><b>Theme</b></span>
-                <span slot="unchecked-message"><b>Dark</b></span>
-                <span slot="checked-message"><b>Light</b></span>
-            </FluentSwitch>
-        </div>
-        @*<a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>*@
-    </div>
-    <div class="main">
-
-        @*
-        <div class="navigation">
+<div class="page">
+    <div class="sidebar">
         <NavMenu />
-        </div>
-        *@
-
-        <div class="content">
-            <main>
-                <article class="content px-4">
-                    <ErrorBoundary @ref="errorBoundary">
-                        <ChildContent>
-                            @if (!tokenExpired)
-                            {
-                                @Body
-                            }
-                        </ChildContent>
-                        <ErrorContent Context="ex">
-                            <p class="error">@ex.Message</p>
-                        </ErrorContent>
-                    </ErrorBoundary>
-                    <Footer></Footer>
-                </article>
-            </main>
-        </div>
     </div>
-</div>
 
+    <main>
+        <div class="top-row px-4">
+            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+        </div>
+
+        <article class="content px-4">
+            <ErrorBoundary @ref="errorBoundary">
+                <ChildContent>
+                    @if (!tokenExpired)
+                    {
+                        @Body
+                        if (loaded)
+                        {
+                            <Footer />
+                        }
+                    }
+                </ChildContent>
+                <ErrorContent Context="ex">
+                    <p class="error">@ex.Message</p>
+                </ErrorContent>
+            </ErrorBoundary>
+
+        </article>
+    </main>
+</div>
 
 @code {
     BrowserStorage? bStorage;
-
-    ElementReference container;
     ErrorBoundary? errorBoundary;
-    float baseLayerLuminance = 0.15f;
 
     private Timer? timer;
     bool tokenExpired = false;
     int minutesToExpire = 3;
     int minutesToCheck = 2;
+    bool loaded = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -88,10 +72,9 @@
         }
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    //protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnAfterRender(bool firstRender)
     {
-        await BaseLayerLuminance.SetValueFor(container, baseLayerLuminance);
-
         if (firstRender)
         {
             // always start timer at first render
@@ -109,6 +92,7 @@
     protected override void OnParametersSet()
     {
         errorBoundary?.Recover();
+        loaded = true;
     }
 
     private void OnTimerCallback() // for expired token
@@ -182,11 +166,6 @@
 
             //}
         }
-    }
-
-    public void SwitchTheme()
-    {
-        baseLayerLuminance = baseLayerLuminance == 1f ? 0.15f : 1f;
     }
 
     public void Dispose()
