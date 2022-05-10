@@ -8,6 +8,14 @@ main {
     flex: 1;
 }
 
+article {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+    padding-left: 1.2rem !important;
+    padding-right: 1.2rem !important;
+}
+
+
 .sidebar {
     background-image: linear-gradient(180deg, rgb(51, 41, 51) 0%, rgb(58, 49, 58) 100%);
     border-bottom: 4px solid #2B212B;
@@ -15,7 +23,7 @@ main {
 
 .top-row {
     background-color: #332933;
-    border-bottom: 1px solid #2B212B;
+    border-bottom: 4px solid #2B212B;
     justify-content: flex-end;
     height: 3rem;
     display: flex;
@@ -61,7 +69,7 @@ main {
     }
 
     .sidebar {
-        width: 250px;
+        width: 225px;
         height: 100vh;
         position: sticky;
         top: 0;
@@ -71,6 +79,7 @@ main {
         position: sticky;
         top: 0;
         z-index: 1;
+        padding-right: 1rem !important;
     }
 
         .top-row.auth ::deep a:first-child {
@@ -78,8 +87,4 @@ main {
             text-align: right;
             width: 0;
         }
-
-    .top-row, article {
-        padding: 1.5rem !important;
-    }
 }
