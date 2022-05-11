@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="linqtotwitter" Version="6.14.0" />
-    <PackageReference Include="System.Memory.Data" Version="7.0.0-preview.3.22175.4" />
+    <PackageReference Include="System.Memory.Data" Version="7.0.0-preview.4.22229.4" />
   </ItemGroup>
 
 </Project>
