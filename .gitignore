@@ -365,3 +365,5 @@ FodyWeavers.xsd
 # CrowTool
 /CrowTool.WebAPI
 /CrowTool.YARP
+/crowtool.zip
+/BuildCrowToolForCloudflarePages.bat
